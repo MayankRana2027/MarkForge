@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarkForge — Live Markdown Editor</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header id="appHeader">
+    <div class="logo">
+      <div class="logo-icon">M↓</div>
+      <span class="logo-text">Mark<span>Forge</span></span>
+    </div>
+
+    <div class="header-center">
+      <div class="live-dot" id="liveDot"></div>
+      <span class="live-label">Live Preview</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="clearEditor()" title="Clear document">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M2 2h12v2H2V2zm1 3h10l-.8 9H3.8L3 5zm3.5 2v5h1V7h-1zm3 0v5h1V7h-1z"/></svg>
+        Clear
+      </button>
+      <button class="btn btn-ghost" onclick="toggleFindReplace()" id="findBtn" title="Find & Replace (Ctrl+H)">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+        Find
+      </button>
+      <button class="btn btn-ghost theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">
+        <span class="theme-icon-dark">☀️</span>
+        <span class="theme-icon-light">🌙</span>
+      </button>
+      <div class="export-group">
+        <button class="btn btn-ghost" onclick="copyHTML()" title="Copy rendered HTML">Copy HTML</button>
+        <div class="dropdown-wrap">
+          <button class="btn btn-primary" onclick="toggleExportMenu()" id="exportBtn">↓ Export ▾</button>
+          <div class="dropdown-menu" id="exportMenu">
+            <button onclick="downloadHTML(); closeExportMenu()">
+              <svg viewBox="0 0 16 16" width="13" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/></svg>
+              Export as HTML
+            </button>
+            <button onclick="downloadMarkdown(); closeExportMenu()">
+              <svg viewBox="0 0 16 16" width="13" fill="currentColor"><path d="M14 4.5V11h-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5L14 4.5z"/></svg>
+              Export as .md
+            </button>
+            <button onclick="exportPDF(); closeExportMenu()">
+              <svg viewBox="0 0 16 16" width="13" fill="currentColor"><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zM9.5 3A1.5 1.5 0 0 1 8 1.5V0H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4h-2a1.5 1.5 0 0 1-1.5-1.5z"/></svg>
+              Export as PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── TOOLBAR ── -->
+  <div class="toolbar" id="toolbar">
+    <div class="toolbar-group">
+      <button class="tool-btn" onclick="insertMd('# ','',true)"   title="Heading 1 (H1)">H1</button>
+      <button class="tool-btn" onclick="insertMd('## ','',true)"  title="Heading 2 (H2)">H2</button>
+      <button class="tool-btn" onclick="insertMd('### ','',true)" title="Heading 3 (H3)">H3</button>
+    </div>
+    <div class="toolbar-sep"></div>
+    <div class="toolbar-group">
+      <button class="tool-btn" onclick="insertMd('**','**')" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button class="tool-btn" onclick="insertMd('*','*')"   title="Italic (Ctrl+I)"><i>I</i></button>
+      <button class="tool-btn" onclick="insertMd('~~','~~')" title="Strikethrough"><s>S</s></button>
+      <button class="tool-btn" onclick="insertMd('`','`')"   title="Inline code">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M5.48 4.56L1.04 8l4.44 3.44-.96 1.12L0 8l4.52-4.56.96 1.12zm5.04-1.12L15.04 8l-4.52 4.56-.96-1.12L13.96 8 9.56 3.56l.96-1.12z"/></svg>
+      </button>
+      <button class="tool-btn" onclick="insertMd('<mark>','</mark>')" title="Highlight">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M1 0h14v2H1V0zm0 14h14v2H1v-2zM11 5H5v6h6V5zm-1 5H6V6h4v4z"/></svg>
+      </button>
+    </div>
+    <div class="toolbar-sep"></div>
+    <div class="toolbar-group">
+      <button class="tool-btn" onclick="insertMd('- ','',true)"  title="Bullet list">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M5 4h10v1.5H5V4zm0 3.5h10V9H5V7.5zm0 3.5h10v1.5H5V11zm-4-7h1.5v1.5H1V4zm0 3.5h1.5V9H1V7.5zm0 3.5h1.5v1.5H1V11z"/></svg>
+      </button>
+      <button class="tool-btn" onclick="insertMd('1. ','',true)" title="Numbered list">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M4 4h10v1.5H4V4zm0 3.5h10V9H4V7.5zm0 3.5h10v1.5H4V11zM1 4.5h1V7H.5V5.5H0V4.5h1zm-.5 6.5H2V12H0v-.5l1.5-1.5H0v-.5h2v.5L.5 11.5z"/></svg>
+      </button>
+      <button class="tool-btn" onclick="insertMd('- [ ] ','',true)" title="Task list">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zm0 1H2v12h12V2zm-2.354 3.646-5 5-2.5-2.5.708-.708L6.5 9.293l4.293-4.293.853.646z"/></svg>
+      </button>
+      <button class="tool-btn" onclick="insertMd('> ','',true)"  title="Blockquote">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M3.5 6.5A2.5 2.5 0 016 4h.5v1.5H6A1 1 0 005 6.5V8h1.5v4H2V8h1.5V6.5zm7 0A2.5 2.5 0 0113 4h.5v1.5H13A1 1 0 0012 6.5V8h1.5v4H9V8h1.5V6.5z"/></svg>
+      </button>
+    </div>
+    <div class="toolbar-sep"></div>
+    <div class="toolbar-group">
+      <button class="tool-btn" onclick="insertMd('[','](url)')" title="Insert link">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M4.5 3A3.5 3.5 0 001 6.5v.5h1.5v-.5A2 2 0 014.5 4.5H6V3H4.5zm5 0v1.5h1.5A2 2 0 0113 6.5V7h1.5v-.5A3.5 3.5 0 009.5 3H9zM1 7.5V8h1.5v-.5H1zm12 0V8H14.5v-.5H13zM1 8.5V9A3.5 3.5 0 004.5 12.5H6V11H4.5A2 2 0 012.5 9V8.5H1zm12 0V9A2 2 0 0111 11H9.5v1.5H11A3.5 3.5 0 0014.5 9v-.5H13zM5 7.5v1h6v-1H5z"/></svg>
+      </button>
+      <button class="tool-btn" onclick="insertMd('![alt](',')')" title="Insert image">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M14.5 1h-13A1.5 1.5 0 000 2.5v11A1.5 1.5 0 001.5 15h13a1.5 1.5 0 001.5-1.5v-11A1.5 1.5 0 0014.5 1zm-13 1.5h13v7.5l-2.5-2.5L9 11l-3-3-3 3.5V2.5zm2 2a1 1 0 100 2 1 1 0 000-2z"/></svg>
+      </button>
+      <button class="tool-btn" onclick="insertCodeBlock()" title="Code block">```</button>
+      <button class="tool-btn" onclick="insertMd('\n---\n','',true)" title="Horizontal rule">—</button>
+      <button class="tool-btn" onclick="insertTable()" title="Insert table">▦</button>
+      <button class="tool-btn" onclick="insertMath()" title="Insert math (LaTeX)">∑</button>
+    </div>
+    <div class="toolbar-sep"></div>
+    <div class="toolbar-group">
+      <button class="tool-btn" onclick="undoAction()" title="Undo (Ctrl+Z)">↩</button>
+      <button class="tool-btn" onclick="redoAction()" title="Redo (Ctrl+Y)">↪</button>
+    </div>
+
+    <div class="toolbar-right">
+      <span class="char-count" id="charCount">0 chars</span>
+      <div class="autosave-status" id="autosaveStatus" title="Auto-save status">
+        <span class="save-dot"></span>
+        <span class="save-text">Saved</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FIND & REPLACE PANEL ── -->
+  <div class="find-replace-panel" id="findReplacePanel">
+    <div class="fr-row">
+      <div class="fr-input-group">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13" class="fr-icon"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+        <input type="text" id="findInput" placeholder="Find…" autocomplete="off" spellcheck="false" />
+        <span class="fr-count" id="frCount"></span>
+      </div>
+      <div class="fr-input-group">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13" class="fr-icon"><path d="M2 2a1 1 0 0 1 1-1h8.5a1 1 0 0 1 1 1v8H14a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H3a1 1 0 0 1-1-1V2zm1 0v10h8V2H3z"/></svg>
+        <input type="text" id="replaceInput" placeholder="Replace with…" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+    <div class="fr-actions">
+      <label class="fr-check"><input type="checkbox" id="frCase" /> Case sensitive</label>
+      <label class="fr-check"><input type="checkbox" id="frRegex" /> Regex</label>
+      <label class="fr-check"><input type="checkbox" id="frWord" /> Whole word</label>
+      <div class="fr-btns">
+        <button class="btn btn-ghost btn-xs" onclick="findPrev()">↑ Prev</button>
+        <button class="btn btn-ghost btn-xs" onclick="findNext()">↓ Next</button>
+        <button class="btn btn-ghost btn-xs" onclick="replaceCurrent()">Replace</button>
+        <button class="btn btn-ghost btn-xs" onclick="replaceAll()">Replace All</button>
+        <button class="btn btn-ghost btn-xs fr-close" onclick="closeFindReplace()">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANES ── -->
+  <div class="panes" id="panesContainer">
+
+    <!-- Editor -->
+    <div class="editor-pane" id="editorPane">
+      <div class="pane-header">
+        <div class="pane-header-dot"></div>
+        Markdown Source
+        <span class="pane-badge" id="modifiedBadge" style="display:none">●</span>
+      </div>
+      <div class="editor-wrap">
+        <div class="line-numbers" id="lineNumbers"></div>
+        <textarea id="editor" spellcheck="false" placeholder="Start writing Markdown here…"></textarea>
+      </div>
+    </div>
+
+    <!-- Resize Handle -->
+    <div class="resize-handle" id="resizeHandle">
+      <div class="resize-grip"></div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-pane" id="previewPane">
+      <div class="pane-header">
+        <div class="pane-header-dot green"></div>
+        HTML Preview
+        <div class="pane-header-actions">
+          <button class="pane-icon-btn" onclick="toggleScrollSync()" id="scrollSyncBtn" title="Toggle scroll sync">⇅</button>
+          <button class="pane-icon-btn" onclick="toggleFocusMode()" title="Focus mode">⛶</button>
+        </div>
+      </div>
+      <iframe id="preview-frame" title="HTML Preview" sandbox="allow-same-origin"></iframe>
+    </div>
+
+  </div>
+
+  <!-- ── STATUS BAR ── -->
+  <div class="statusbar">
+    <span class="statusbar-item brand">MarkForge</span>
+    <span class="sep">·</span>
+    <span class="statusbar-item" id="wordCount">0 words</span>
+    <span class="sep">·</span>
+    <span class="statusbar-item" id="lineCount">0 lines</span>
+    <span class="sep">·</span>
+    <span class="statusbar-item" id="readTime">~0 min read</span>
+    <span class="sep">·</span>
+    <span class="statusbar-item" id="cursorPos">Ln 1, Col 1</span>
+    <span class="statusbar-right">
+      <span class="statusbar-item" id="encodingLabel">UTF-8</span>
+      <span class="sep">·</span>
+      <span class="statusbar-item" id="lastSaved">Not saved</span>
+    </span>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Focus mode overlay -->
+  <div class="focus-overlay" id="focusOverlay" onclick="toggleFocusMode()"></div>
+
+  <!-- SCRIPTS — ordered by dependency -->
+  <script src="js/preview.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/toolbar.js"></script>
+  <script src="js/find-replace.js"></script>
+  <script src="js/autosave.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/statusbar.js"></script>
+  <script src="js/resize.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
