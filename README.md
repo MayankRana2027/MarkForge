@@ -115,7 +115,7 @@ This project is open-source and free to use.
 
 ## 👨‍💻 Author
 
-Developed by **Mayank Rana**
+Developed by **Mayank Rana** **Ashish Gadiya**
 
 ---
 
